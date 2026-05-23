@@ -19,13 +19,13 @@ export default function RegistrationPage({ onSuccess }) {
 
   const validate = () => {
     const e = {}
-    if (!form.batch)                              e.batch  = 'Please select a batch timing'
-    if (!form.name.trim())                        e.name   = 'Name is required'
-    else if (form.name.trim().length < 2)         e.name   = 'Name must be at least 2 characters'
-    if (!form.email.trim())                       e.email  = 'Email is required'
+    if (!form.batch)                              e.batch = 'Please select a batch timing'
+    if (!form.name.trim())                        e.name  = 'Name is required'
+    else if (form.name.trim().length < 2)         e.name  = 'Name must be at least 2 characters'
+    if (!form.email.trim())                       e.email = 'Email is required'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email'
-    if (!form.phone.trim())                       e.phone  = 'Phone number is required'
-    else if (!/^[6-9]\d{9}$/.test(form.phone))   e.phone  = 'Enter a valid 10-digit Indian mobile number'
+    if (!form.phone.trim())                       e.phone = 'Phone number is required'
+    else if (!/^[6-9]\d{9}$/.test(form.phone))   e.phone = 'Enter a valid 10-digit Indian mobile number'
     return e
   }
 
@@ -33,55 +33,57 @@ export default function RegistrationPage({ onSuccess }) {
     e.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
-
     setLoading(true)
     setApiError('')
     try {
       const result = await registerStudent(form)
       onSuccess({ ...form, id: result.id || result.studentId })
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Registration failed. Please try again.')
+      const msg = err.response?.data?.message || ''
+      setApiError(msg.includes('CORS') ? msg : (msg || 'Registration failed. Please try again.'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="page">
+    <div className="reg-page">
       {/* Left panel */}
-      <aside className="panel-left">
-        <div className="logo">
-          <span className="logo-mark">EB</span>
-          <span className="logo-text">EduBatch</span>
-        </div>
-        <div className="panel-content">
+      <aside className="left-panel">
+        <div className="left-content">
+          <div className="hero-tag">Enrollment Portal</div>
           <h1 className="hero-title">
-            <span className="line">STUDENT</span>
-            <span className="line accent">REGIS-</span>
-            <span className="line accent">TRATION</span>
+            Student<br />
+            <span className="hero-accent">Registration</span>
           </h1>
           <p className="hero-desc">
             Choose your preferred morning batch and complete your enrollment in under 60 seconds.
           </p>
-          <div className="stats">
-            <div className="stat"><span className="stat-num">3</span><span className="stat-label">Batches</span></div>
-            <div className="stat"><span className="stat-num">AM</span><span className="stat-label">Sessions</span></div>
-            <div className="stat"><span className="stat-num">∞</span><span className="stat-label">Learning</span></div>
+
+          <div className="batch-preview">
+            {['07:30', '09:00', '10:30'].map(t => (
+              <div key={t} className={`bp-item ${form.batch === t ? 'bp-active' : ''}`}>
+                <span className="bp-dot" />
+                <span className="bp-time">{t} AM</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="panel-footer">
-          <span className="sys-label">SYS_STATUS</span>
-          <span className="sys-dot" />
-          <span className="sys-value">ONLINE</span>
+
+        <div className="left-footer">
+          <span className="status-dot" />
+          <span className="status-text">System Online</span>
+          <span className="status-sep">·</span>
+          <span className="status-text">3 Batches Available</span>
         </div>
       </aside>
 
-      {/* Right panel — form */}
-      <main className="panel-right">
-        <div className="form-container">
+      {/* Right form panel */}
+      <main className="right-panel">
+        <div className="form-card">
           <div className="form-header">
-            <p className="form-meta">ENROLLMENT FORM // v1.0</p>
-            <h2 className="form-title">New Registration</h2>
+            <h2 className="form-title">New Enrollment</h2>
+            <p className="form-sub">Fill in your details to register</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
@@ -91,52 +93,29 @@ export default function RegistrationPage({ onSuccess }) {
                 onChange={(v) => { setForm(f => ({ ...f, batch: v })); setErrors(e => ({ ...e, batch: '' })) }}
                 error={errors.batch}
               />
-
-              <FormInput
-                label="Full Name"
-                index={2}
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="e.g. Ravi Kumar"
-                error={errors.name}
-              />
-              <FormInput
-                label="Email Address"
-                index={3}
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="e.g. ravi@example.com"
-                error={errors.email}
-              />
-              <FormInput
-                label="Phone Number"
-                index={4}
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="10-digit mobile number"
-                error={errors.phone}
-              />
+              <FormInput label="Full Name"       index={2} name="name"  value={form.name}  onChange={handleChange} placeholder="e.g. Ranjit Kumar" error={errors.name} />
+              <FormInput label="Email Address"   index={3} type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@example.com" error={errors.email} />
+              <FormInput label="Phone Number"    index={4} type="tel"   name="phone" value={form.phone} onChange={handleChange} placeholder="10-digit mobile" error={errors.phone} />
             </div>
 
             {apiError && (
               <div className="api-error">
-                <span>⚠</span> {apiError}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/><path d="M8 5v3.5M8 11v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                {apiError}
               </div>
             )}
 
             <button className="submit-btn" type="submit" disabled={loading}>
               {loading ? (
-                <span className="loading-text">
-                  <span className="dot">.</span><span className="dot">.</span><span className="dot">.</span>
-                  REGISTERING
+                <span className="btn-loading">
+                  <span className="spinner" />
+                  Registering...
                 </span>
               ) : (
-                <>COMPLETE REGISTRATION <span className="btn-arrow">→</span></>
+                <span className="btn-inner">
+                  Complete Registration
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </span>
               )}
             </button>
           </form>
@@ -144,149 +123,159 @@ export default function RegistrationPage({ onSuccess }) {
       </main>
 
       <style>{`
-        .page {
+        .reg-page {
           display: grid;
-          grid-template-columns: 420px 1fr;
-          min-height: 100vh;
-          animation: fadeUp 0.5s ease forwards;
+          grid-template-columns: 400px 1fr;
+          min-height: calc(100vh - 60px);
+          animation: fadeIn 0.4s ease;
         }
         @media (max-width: 860px) {
-          .page { grid-template-columns: 1fr; }
+          .reg-page { grid-template-columns: 1fr; }
         }
 
-        /* Left Panel */
-        .panel-left {
+        /* Left */
+        .left-panel {
           background: var(--surface);
           border-right: 1px solid var(--border);
-          padding: 40px 36px;
+          padding: 48px 40px;
           display: flex;
           flex-direction: column;
-          gap: 40px;
+          justify-content: space-between;
           position: sticky;
-          top: 0;
-          height: 100vh;
+          top: 60px;
+          height: calc(100vh - 60px);
+          overflow: hidden;
         }
         @media (max-width: 860px) {
-          .panel-left { position: relative; height: auto; }
+          .left-panel { position: relative; height: auto; top: 0; }
         }
 
-        .logo { display: flex; align-items: center; gap: 10px; }
-        .logo-mark {
-          width: 38px; height: 38px;
-          background: var(--accent);
-          color: var(--bg);
-          font-family: var(--display);
-          font-weight: 800;
-          font-size: 0.85rem;
-          display: flex; align-items: center; justify-content: center;
-          border-radius: 6px;
-          letter-spacing: -0.02em;
-        }
-        .logo-text {
-          font-family: var(--display);
+        .left-content { display: flex; flex-direction: column; gap: 28px; }
+
+        .hero-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          background: var(--accent-glow);
+          border: 1px solid rgba(200,241,53,0.25);
+          color: var(--accent);
+          font-size: 0.72rem;
           font-weight: 700;
-          font-size: 1rem;
-          color: var(--text);
-          letter-spacing: 0.05em;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 5px 12px;
+          border-radius: 100px;
+          width: fit-content;
         }
-
-        .panel-content { flex: 1; }
 
         .hero-title {
-          display: flex;
-          flex-direction: column;
           font-family: var(--display);
-          font-weight: 800;
-          font-size: clamp(2.8rem, 4vw, 3.6rem);
-          line-height: 0.95;
+          font-size: clamp(2.6rem, 4vw, 3.4rem);
+          font-weight: 900;
+          line-height: 1.0;
           letter-spacing: -0.04em;
-          margin-bottom: 24px;
+          color: var(--text);
         }
-        .line { display: block; color: var(--text); }
-        .accent { color: var(--accent); }
+        .hero-accent { color: var(--accent); }
 
         .hero-desc {
-          font-size: 0.78rem;
-          color: var(--muted);
+          font-size: 0.9rem;
+          color: var(--text2);
           line-height: 1.7;
-          max-width: 280px;
-          margin-bottom: 40px;
+          max-width: 300px;
+          font-weight: 400;
         }
 
-        .stats { display: flex; gap: 28px; }
-        .stat { display: flex; flex-direction: column; gap: 2px; }
-        .stat-num {
-          font-family: var(--display);
-          font-size: 1.6rem;
-          font-weight: 800;
-          color: var(--accent);
-          line-height: 1;
+        .batch-preview {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          padding: 20px;
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
         }
-        .stat-label {
-          font-size: 0.62rem;
-          color: var(--muted);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-        }
-
-        .panel-footer {
+        .bp-item {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
+          padding: 10px 14px;
+          border-radius: var(--radius);
+          transition: background 0.2s;
+        }
+        .bp-item.bp-active { background: var(--accent-glow); }
+        .bp-dot {
+          width: 8px; height: 8px;
+          border-radius: 50%;
+          background: var(--border2);
+          flex-shrink: 0;
+          transition: background 0.2s;
+        }
+        .bp-item.bp-active .bp-dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+        .bp-time {
+          font-family: var(--mono);
+          font-size: 0.85rem;
+          color: var(--text2);
+          font-weight: 500;
+        }
+        .bp-item.bp-active .bp-time { color: var(--accent); }
+
+        .left-footer {
+          display: flex;
+          align-items: center;
+          gap: 10px;
           padding-top: 20px;
           border-top: 1px solid var(--border);
         }
-        .sys-label { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.12em; }
-        .sys-dot {
-          width: 6px; height: 6px;
-          background: var(--success);
+        .status-dot {
+          width: 7px; height: 7px;
+          background: var(--green);
           border-radius: 50%;
           animation: pulse 2s ease-in-out infinite;
+          flex-shrink: 0;
         }
-        .sys-value { font-size: 0.62rem; color: var(--success); letter-spacing: 0.12em; }
+        .status-text { font-size: 0.72rem; color: var(--text3); font-weight: 500; }
+        .status-sep { color: var(--border2); }
 
-        /* Right Panel */
-        .panel-right {
-          padding: 40px;
+        /* Right */
+        .right-panel {
+          padding: 48px 40px;
           display: flex;
           align-items: flex-start;
           justify-content: center;
           overflow-y: auto;
         }
 
-        .form-container {
+        .form-card {
           width: 100%;
-          max-width: 560px;
+          max-width: 520px;
           display: flex;
           flex-direction: column;
-          gap: 36px;
-          padding-top: 20px;
+          gap: 32px;
         }
 
-        .form-meta {
-          font-size: 0.65rem;
-          color: var(--muted);
-          letter-spacing: 0.15em;
-          margin-bottom: 6px;
-        }
+        .form-header { display: flex; flex-direction: column; gap: 6px; }
         .form-title {
-          font-family: var(--display);
-          font-size: 1.8rem;
-          font-weight: 700;
+          font-size: 1.9rem;
+          font-weight: 900;
+          letter-spacing: -0.03em;
           color: var(--text);
-          letter-spacing: -0.02em;
         }
+        .form-sub { font-size: 0.88rem; color: var(--text2); font-weight: 400; }
 
-        .fields { display: flex; flex-direction: column; gap: 24px; }
+        .fields { display: flex; flex-direction: column; gap: 22px; }
 
         .api-error {
-          background: rgba(255,77,106,0.08);
-          border: 1px solid var(--danger);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--red-dim);
+          border: 1px solid var(--red);
           border-radius: var(--radius);
           padding: 12px 16px;
-          font-size: 0.78rem;
-          color: var(--danger);
-          letter-spacing: 0.03em;
+          font-size: 0.82rem;
+          color: var(--red);
+          font-family: var(--mono);
         }
 
         .submit-btn {
@@ -295,29 +284,36 @@ export default function RegistrationPage({ onSuccess }) {
           color: var(--bg);
           border: none;
           border-radius: var(--radius);
-          padding: 16px 24px;
-          font-family: var(--mono);
-          font-size: 0.82rem;
-          font-weight: 700;
-          letter-spacing: 0.1em;
+          padding: 15px 24px;
+          font-family: var(--display);
+          font-size: 0.95rem;
+          font-weight: 800;
           cursor: pointer;
-          transition: background 0.2s, transform 0.15s, opacity 0.2s;
+          transition: all 0.2s;
+          letter-spacing: -0.01em;
+        }
+        .submit-btn:hover:not(:disabled) {
+          background: #d4f53d;
+          transform: translateY(-1px);
+          box-shadow: 0 8px 24px rgba(200,241,53,0.25);
+        }
+        .submit-btn:active:not(:disabled) { transform: translateY(0); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .btn-inner, .btn-loading {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
+          gap: 8px;
         }
-        .submit-btn:hover:not(:disabled) {
-          background: var(--accent-dim);
-          transform: translateY(-1px);
-        }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-arrow { font-size: 1rem; }
 
-        .loading-text { display: flex; align-items: center; gap: 3px; }
-        .dot { animation: blink 1s step-end infinite; }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
+        .spinner {
+          width: 16px; height: 16px;
+          border: 2px solid rgba(6,7,10,0.2);
+          border-top-color: var(--bg);
+          border-radius: 50%;
+          animation: spin 0.7s linear infinite;
+        }
       `}</style>
     </div>
   )

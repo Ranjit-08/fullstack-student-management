@@ -18,4 +18,9 @@ export const getStudents = async () => {
   return response.data
 }
 
+export const deleteStudent = async (id) => {
+  const response = await api.delete(`/students/${id}`)
+  return response.data
+}
+
 export default api
